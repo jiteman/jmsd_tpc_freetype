@@ -16,11 +16,38 @@ set( ${PROJECT_NAME}_DEPENDENCY_DIRS_VAR
 list( REMOVE_DUPLICATES ${PROJECT_NAME}_DEPENDENCY_DIRS_VAR )
 include_directories( ${${PROJECT_NAME}_DEPENDENCY_DIRS_VAR} )
 
+#include_directories( ${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/freetype/config )
 
 ## this project headers and sources enumeration section
 file( GLOB_RECURSE header_and_source_files
-	${JMSD_THIS_PROJECT_SOURCE_ROOT}/src/*.h* 
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/src/*.h*
 	${JMSD_THIS_PROJECT_SOURCE_ROOT}/src/*.c* )
+
+file( GLOB nonrecursive_header_and_source_files
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/*.h*
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/*.c*
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/freetype/*.h*
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/freetype/*.c*
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/freetype/config/*.h*
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/freetype/config/*.c* )
+
+list( APPEND header_and_source_files ${nonrecursive_header_and_source_files} )
+
+set( FILES_TO_REMOVE_HEADER_AND_SOURCE
+	"" )
+
+if( UNIX )
+	list( APPEND FILES_TO_REMOVE_HEADER_AND_SOURCE
+		"src/base/ftsystem.c" )
+	list( APPEND header_and_source_files
+		${JMSD_THIS_PROJECT_SOURCE_ROOT}/builds/unix/ftsystem.c )
+elseif( WIN32 )
+	list( APPEND header_and_source_files
+		${JMSD_THIS_PROJECT_SOURCE_ROOT}/builds/windows/ftdebug.c )
+endif()
+
+JMSD_REMOVE_FILES_FROM_THE_LIST( header_and_source_files FILES_TO_REMOVE_HEADER_AND_SOURCE )
+
 add_library( ${PROJECT_NAME} SHARED ${header_and_source_files} )
 
 
