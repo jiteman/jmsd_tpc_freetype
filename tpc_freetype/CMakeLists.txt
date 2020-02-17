@@ -12,7 +12,16 @@ set( JMSD_THIS_PROJECT_SOURCE_ROOT ${JMSD_COMPONENT_SOURCE_ROOT_PATH} )
 ## include dependencies
 set( ${PROJECT_NAME}_DEPENDENCY_DIRS_VAR
 	${JMSD_PLATFORM_SOURCES}
-	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include )
+	${tpc_zlib_DEPENDENCY_DIRS}
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/common )
+
+if( UNIX )
+	list( APPEND ${PROJECT_NAME}_DEPENDENCY_DIRS_VAR ${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/linux )
+elseif ( WIN32 )
+	list( APPEND ${PROJECT_NAME}_DEPENDENCY_DIRS_VAR ${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/windows )
+endif()
+
 list( REMOVE_DUPLICATES ${PROJECT_NAME}_DEPENDENCY_DIRS_VAR )
 include_directories( ${${PROJECT_NAME}_DEPENDENCY_DIRS_VAR} )
 
@@ -21,7 +30,21 @@ include_directories( ${${PROJECT_NAME}_DEPENDENCY_DIRS_VAR} )
 ## this project headers and sources enumeration section
 file( GLOB_RECURSE header_and_source_files
 	${JMSD_THIS_PROJECT_SOURCE_ROOT}/src/*.h*
-	${JMSD_THIS_PROJECT_SOURCE_ROOT}/src/*.c* )
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/src/*.c*
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/common/*.h*
+	${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/common/*.c* )
+
+if( UNIX )
+	file( GLOB_RECURSE platform_header_and_source_files
+		${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/linux/*.h*
+		${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/linux/*.c* )
+elseif ( WIN32 )
+	file( GLOB_RECURSE platform_header_and_source_files
+		${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/windows/*.h*
+		${JMSD_THIS_PROJECT_SOURCE_ROOT}/jmsd_adhocs/windows/*.c* )
+endif()
+
+list( APPEND header_and_source_files ${platform_header_and_source_files} )
 
 file( GLOB nonrecursive_header_and_source_files
 	${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/*.h*
@@ -34,7 +57,49 @@ file( GLOB nonrecursive_header_and_source_files
 list( APPEND header_and_source_files ${nonrecursive_header_and_source_files} )
 
 set( FILES_TO_REMOVE_HEADER_AND_SOURCE
-	"" )
+	"autofit.c"
+	"src/bdf/bdf.c"
+	"cff.c"
+	"ftbase.c"
+	"ftcache.c"
+	"gxvalid"
+	"otvalid.c"
+	"pcf.c"
+	"pfr.c"
+	"psaux.c"
+	"pshinter.c"
+	"psnames.c"
+	"src/raster/raster.c"
+	"sfnt.c"
+	"src/smooth/smooth.c"
+	"truetype.c"
+	"type1.c"
+	"type1cid.c"
+	"type42.c" )
+
+# build-in zlib
+list( APPEND FILES_TO_REMOVE_HEADER_AND_SOURCE
+	"src/gzip/adler32.c"
+	"src/gzip/ftgzip.c"
+	"src/gzip/ftzconf.h"
+	"src/gzip/infblock.c"
+	"src/gzip/infblock.h"
+	"src/gzip/infcodes.c"
+	"src/gzip/infcodes.h"
+	"src/gzip/inffixed.h"
+	"src/gzip/inflate.c"
+	"src/gzip/inftrees.c"
+	"src/gzip/inftrees.h"
+	"src/gzip/infutil.c"
+	"src/gzip/infutil.h"
+	"src/gzip/zlib.h"
+	"src/gzip/zutil.c"
+	"src/gzip/zutil.h"
+	"tools/ftrandom/ftrandom.c"
+	"tools/apinames.c"
+	"tools/test_afm.c"
+	"tools/test_bbox.c"
+	"tools/test_trig.c" )
 
 if( UNIX )
 	list( APPEND FILES_TO_REMOVE_HEADER_AND_SOURCE
@@ -42,6 +107,8 @@ if( UNIX )
 	list( APPEND header_and_source_files
 		${JMSD_THIS_PROJECT_SOURCE_ROOT}/builds/unix/ftsystem.c )
 elseif( WIN32 )
+	list( APPEND FILES_TO_REMOVE_HEADER_AND_SOURCE
+		"src/base/ftdebug.c" )
 	list( APPEND header_and_source_files
 		${JMSD_THIS_PROJECT_SOURCE_ROOT}/builds/windows/ftdebug.c )
 endif()
@@ -53,11 +120,15 @@ add_library( ${PROJECT_NAME} SHARED ${header_and_source_files} )
 
 ## definition section
 set( ${PROJECT_NAME}_BUILD_DEFINITIONS_VAR
-	-DJMSD_TPC_BASE_LIBRARY_TEMPLATE_SHARED_INTERFACE_INTERNAL )
+	-DJMSD_TPC_FREETYPE_SHARED_INTERFACE_INTERNAL
+	-DFT2_BUILD_LIBRARY
+	-DFT2_DLL_EXPORT
+	${tpc_zlib_LINK_DEFINITIONS} )
 JMSD_LIST_TO_STRING( ${PROJECT_NAME}_BUILD_DEFINITIONS_VAR )
 JMSD_STRING_REMOVE_DUPLICATES( ${PROJECT_NAME}_BUILD_DEFINITIONS_VAR )
 set( ${PROJECT_NAME}_LINK_DEFINITIONS_VAR
-	"" )
+	-DFT2_DLL_IMPORT
+	${tpc_zlib_LINK_DEFINITIONS} )
 JMSD_LIST_TO_STRING( ${PROJECT_NAME}_LINK_DEFINITIONS_VAR )
 JMSD_STRING_REMOVE_DUPLICATES( ${PROJECT_NAME}_LINK_DEFINITIONS_VAR )
 add_definitions( "${${PROJECT_NAME}_BUILD_DEFINITIONS_VAR}" )
@@ -71,7 +142,8 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES SOVERSION 0.1 )
 
 ## project target section
 set( ${PROJECT_NAME}_DEPENDENCY_LIBS_VAR
-	"" )
+	${tpc_zlib_DEPENDENCY_LIBS}
+	tpc_zlib )
 list( REMOVE_DUPLICATES ${PROJECT_NAME}_DEPENDENCY_LIBS_VAR )
 target_link_libraries( ${PROJECT_NAME} ${${PROJECT_NAME}_DEPENDENCY_LIBS_VAR} )
 
