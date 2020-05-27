@@ -22,9 +22,9 @@ include_directories(
 	${JMSD_COMPONENT_SOURCE_ROOT_PATH}/jmsd_adhocs/common )
 
 if( UNIX )
-	include_directories( ${JMSD_COMPONENT_SOURCE_ROOT_PATH}/jmsd_adhocs/linux )
+	include_directories( ${JMSD_COMPONENT_SOURCE_ROOT_PATH}/jmsd_adhocs/linux/freetype/config )
 elseif ( WIN32 )
-	include_directories( ${JMSD_COMPONENT_SOURCE_ROOT_PATH}/jmsd_adhocs/windows )
+	include_directories( ${JMSD_COMPONENT_SOURCE_ROOT_PATH}/jmsd_adhocs/windows/freetype/config )
 endif()
 
 #include_directories( ${JMSD_THIS_PROJECT_SOURCE_ROOT}/include/freetype/config )
@@ -82,7 +82,7 @@ set( FILES_TO_REMOVE_HEADER_AND_SOURCE
 # build-in zlib
 list( APPEND FILES_TO_REMOVE_HEADER_AND_SOURCE
 	"src/gzip/adler32.c"
-	"src/gzip/ftgzip.c"
+#	"src/gzip/ftgzip.c"
 	"src/gzip/ftzconf.h"
 	"src/gzip/infblock.c"
 	"src/gzip/infblock.h"
